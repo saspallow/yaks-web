@@ -61,49 +61,59 @@ export default {
     };
   },
   computed: {
+    // RPC from .env
     rpcProviderURL () {
       return process.env.VUE_APP_ALCHEMY_URL + process.env.VUE_APP_ALCHEMY_API_KEY 
     }
   },
   methods: {
     async getNFTs () {
+      // reset data
       this.tokenMetadataList = []
+
+      // open loading
       const loadingComponent = this.$buefy.loading.open({
           container: this.$refs.nftCards.$el
       })
-
       
+      // connect RPC
       var provider = new this.$ethers.providers.JsonRpcProvider(this.rpcProviderURL);
 
+      // call smart contract
       this.currentContract = new this.$ethers.Contract(this.contractAddress, PudgyPenguinsABI, provider);
+
+      // get balance by address
       let balance = await this.currentContract.balanceOf(this.walletAddress)
       this.totalNFTs = balance.toNumber()
       let linksArr = []
+
+      // get metadataURI
       for (let i = 0; i < balance.toNumber(); i++) {
         let tokenId = await this.currentContract.tokenOfOwnerByIndex(this.walletAddress, i)
         let tokenMetadataURI = await this.currentContract.tokenURI(tokenId)
-        console.log(tokenMetadataURI)
         if (tokenMetadataURI.startsWith("ipfs://")) {
           tokenMetadataURI = `https://ipfs.io/ipfs/${tokenMetadataURI.split("ipfs://")[1]}`
           
         }
-
         linksArr.push(tokenMetadataURI)
       }
 
-        try {
-          let _this = this
-          this.$http.all(linksArr.map(l => this.$http.get(l)))
-            .then(this.$http.spread(function (...res) {
-              res.forEach(e => {
-                _this.tokenMetadataList.push(e.data)
-              });
-            }));
-        } catch (err) {
-            console.error(err);
-        }
+      // fetch metadata
+      try {
+        let _this = this
+        this.$http.all(linksArr.map(l => this.$http.get(l)))
+          .then(this.$http.spread(function (...res) {
+            res.forEach(e => {
+              _this.tokenMetadataList.push(e.data)
+            });
+          }));
+      } catch (err) {
+          console.error(err);
+      }
 
+      // close loading
       loadingComponent.close()
+
       this.currentContract = null
     }
   },
