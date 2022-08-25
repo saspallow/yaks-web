@@ -4,6 +4,7 @@
     <div class="container">
       <div class="columns is-full is-vcentered is-centered">
         <section>
+        <strong>Contract Address:</strong> <a href="https://etherscan.io/token/0xbd3531da5cf5857e7cfaa92426877b022e612cf8" target="_blank"> {{contractAddress}}</a>
           <b-field label="Wallet address">
               <b-input v-model="walletAddress" :disabled="currentContract" style="width: 500px"></b-input>
           </b-field>
@@ -53,17 +54,11 @@ export default {
   data() {
     return {
       walletAddress: "0x8694157ad12505792703749874c83c4f5c7b24ed",
-      currentAccount: null,
       totalNFTs: 0,
       currentContract : null,
       contractAddress: "0xbd3531da5cf5857e7cfaa92426877b022e612cf8",
       tokenMetadataList: []
     };
-  },
-  mounted() {
-
-  console.log(process.env)
-    this.checkIfWalletIsConnected();
   },
   computed: {
     rpcProviderURL () {
@@ -71,49 +66,6 @@ export default {
     }
   },
   methods: {
-    checkIfWalletIsConnected: async function() {
-      try {
-        const { ethereum } = window;
-
-        if (!ethereum) {
-          alert("Make sure you have metamask!");
-          return;
-        } else {
-          console.log("We have the ethereum object", ethereum);
-        }
-
-        const accounts = await ethereum.request({ method: "eth_accounts" });
-
-        if (accounts.length !== 0) {
-          const account = accounts[0];
-          console.log("Found an authorized account:", account);
-          this.currentAccount = account;
-        } else {
-          console.log("No authorized account found");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    connectWallet: async function() {
-      try {
-        const { ethereum } = window;
-
-        if (!ethereum) {
-          alert("Get MetaMask!");
-          return;
-        }
-
-        const accounts = await ethereum.request({
-          method: "eth_requestAccounts",
-        });
-
-        console.log("Connected", accounts[0]);
-        this.currentAccount = accounts[0];
-      } catch (error) {
-        console.log(error);
-      }
-    },
     async getNFTs () {
       this.tokenMetadataList = []
       const loadingComponent = this.$buefy.loading.open({

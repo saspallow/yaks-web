@@ -1,4 +1,4 @@
-# client
+# Amazing Thailand
 
 ## Project setup
 ```
